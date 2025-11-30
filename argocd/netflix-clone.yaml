@@ -1,0 +1,20 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: netflix-clone-app
+  namespace: argocd
+spec:
+  project: netflix-clone-project
+  source:
+    repoURL: https://github.com/pr12sdd/DevSecOps-Project.git
+    path: ./kubernetes
+    targetRevision: master
+  destination:
+    server:  https://8FEB8829F1023D390D56D38CE47B8BD6.gr7.us-east-2.eks.amazonaws.com
+    namespace: netflix-clone
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace = true
