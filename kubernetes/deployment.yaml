@@ -1,0 +1,31 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: netflix-clone-deployement
+  namespace: netflix-clone
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      apps: netflix-clone
+  template:
+    metadata:
+      labels:
+        apps: netflix-clone
+    spec:
+      containers:
+        - name: netflix-clone
+          image: pkmadhubani/netflix-clone:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: TMDB_V3_API_KEY
+              value: faadc7bf6985b705d165fcdc5316c9c0 
+          resources:
+            requests:
+              cpu: 100m
+              memory: 125Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi 
+

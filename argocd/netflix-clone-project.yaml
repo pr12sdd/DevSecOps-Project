@@ -1,0 +1,14 @@
+kind: AppProject
+apiVersion: argoproj.io/v1
+metadata:
+  name: netflix-clone-project
+  namespace: argocd
+spec:
+  description: "This is my netflix-clone-project"
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: netflix-clone
+      project
+
+
