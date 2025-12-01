@@ -87,9 +87,9 @@ post{
     always {
         emailext attachLog:true,
           subject:"'${currentBuild.result}'",
-          body: "Project:${env.JOB_NAME}<br/>"+
-                "BuildNumber:${env.BUILD_NUMBER}<br/>"+
-                "URL:${env.BUILD_URL}<br/>",
+          body: "Project:${env.JOB_NAME}"</br>+
+                "BuildNumber:${env.BUILD_NUMBER}"<br/>+
+                "URL:${env.BUILD_URL}"</br>,
           to: 'prakashkumar5332@gmail.com',
           attachmentsPattern: 'trivyfs.txt,trivyimagescan.txt'
     }
