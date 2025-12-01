@@ -1,0 +1,97 @@
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment{
+        SCANNER_PATH = tool 'SonarQube'
+    }
+    stages{
+        stage('clean workspace'){
+            steps{
+                cleanWs()
+            }
+        }
+        stage('code checkout'){
+            steps{
+                git branch:'master',url:'https://github.com/pr12sdd/DevSecOps-Project.git'
+            }
+        }
+        stage('sonarqube analysis'){
+            steps{
+                withSonarQubeEnv('sonarqube') {
+                sh "$SCANNER_PATH/bin/sonar-scanner -Dsonar.projectName=Netflix-clone -Dsonar.projectKey=Netflix-clone"
+            }
+        }
+    }
+        stage('Quality Gate'){
+            steps{
+                script{
+                    waitForQualityGate abortPipeline:false , credentialsId: 'squ_b68070934401ab55478baa0482c7ee8f5c6e7823'
+                }
+            }
+        }
+        stage('Install Dependencies'){
+            steps{
+            sh 'npm install'
+            }
+        }
+        stage('Dependencies Check'){
+           steps {
+               dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'Owaspp'
+               dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+           }
+        }
+        stage('Trivy filesystem scan'){
+            steps {
+                sh 'trivy fs . > trivyfs.txt'
+            }
+        }
+        stage('Docker build and push'){
+            steps{
+                script {
+                    withDockerRegistry([credentialsId : 'dockerhub',toolName : 'dockerhub',url: '']){
+                        sh 'docker build --build-arg VITE_APP_TMDB_V3_API_KEY=faadc7bf6985b705d165fcdc5316c9c0 -t netflix-clone:latest .'
+                        sh 'docker image tag netflix-clone:latest pkmadhubani/netflix-clone:latest'
+                        sh 'docker push pkmadhubani/netflix-clone:latest'
+                    }
+                  
+            }
+        }
+        }
+//         stage('Docker build and push') {
+//     steps {
+//         withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+//             sh '''
+//                 echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+//                 docker build --build-arg VITE_APP_TMDB_V3_API_KEY=faadc7bf6985b705d165fcdc5316c9c0 -t pkmadhubani/netflix-clone:latest .
+//                 docker push pkmadhubani/netflix-clone:latest
+//             '''
+//         }
+//     }
+// }
+        stage('Trivy image scan'){
+            steps{
+            sh 'trivy image pkmadhubani/netflix-clone:latest > trivyimagescan.txt'
+            }
+        }
+        stage('Deploy to container'){
+            steps{
+            sh 'docker run -d -p 80:80 pkmadhubani/netflix-clone:latest'
+            }
+        }
+}
+
+post{
+    always {
+        emailext attachLog:true,
+          subject:"'${currentBuild.result}'",
+          body: "Project:${env.JOB_NAME}<br/>"+
+                "BuildNumber:${env.BUILD_NUMBER}<br/>"+
+                "URL:${env.BUILD_URL}<br/>",
+          to: 'prakashkumar5332@gmail.com',
+          attachmentsPattern: 'trivyfs.txt,trivyimagescan.txt'
+    }
+}
+}
