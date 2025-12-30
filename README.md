@@ -397,8 +397,34 @@ sudo systemctl restart jenkins
 
 ```
 **Phase 4: Deploying Application to kubernetes**
-  
-
+  - This downloads the latest release for your system architecture:
+    ```bash
+    curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_arm64.tar.gz
+    ```
+  - After downloading, extract the binary and move it to a directory in your PATH. For example:
+    ```bash
+    sudo mv /tmp/eksctl /usr/local/bin   
+    ```
+  - Verify the installation with:
+    ```bash
+    eksctl version
+    ```
+  - Create ekscluster with:
+    ```bash
+    eksctl create cluster --name=cluster_name --region=region_name --without-nodegroup
+    ```
+  - To associate an OpenID Connect (OIDC) provider with your Amazon EKS cluster:
+    ```bash
+    eksctl utils associate-iam-oidc-provider --cluster=cluster_name --region=region_name --approve
+    ```
+  - To create a nodegroup in your cluster:
+    ```bash
+    eksctl create nodegroup --name=nodegorup_name --cluster=cluster_name --region=region_name --nodes=no_of_nodes --nodes-max=no_of_max_nodes --nodes-min=no_of_min_nodes --node-volume-size=20 --node-type=t2.medium --managed --ssh-access --ssh-public-key=public-key-name
+    ```
+  - For updating the kubeconfig:
+    ```bash
+    aws eks update-kubeconfig --cluster=cluster_name --region=region-name
+    ```
 **Phase 4: Monitoring**
 
 1. **Install Prometheus and Grafana:**
