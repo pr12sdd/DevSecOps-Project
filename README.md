@@ -65,8 +65,6 @@
     ```bash
     git clone https://github.com/pr12sdd/DevSecOps-Project.git
     ```
-    
-
 **Step 3: Install Docker and Run the App Using a Container:**
 
 - Set up Docker on the EC2 instance:
@@ -85,11 +83,12 @@
     ```bash
     docker build -t netflix .
     docker run -d --name netflix -p 8081:80 netflix:latest
-    
-    #to delete
+    ```
+- For deleting:
+   ```bash
     docker stop <containerid>
     docker rmi -f netflix
-    ```
+   ```
 
 It will show an error cause you need API key
 
@@ -110,7 +109,7 @@ docker build --build-arg TMDB_V3_API_KEY=<your-api-key> -t netflix .
 
 **Phase 2: Security**
 
-1. **Install SonarQube and Trivy:**
+**Step 1: Install SonarQube and Trivy:**
     - Install SonarQube and Trivy on the EC2 instance to scan for vulnerabilities.
         
         sonarqube
@@ -138,13 +137,13 @@ docker build --build-arg TMDB_V3_API_KEY=<your-api-key> -t netflix .
         ```
         
         
-2. **Integrate SonarQube and Configure:**
+**Step 2: Integrate SonarQube and Configure:**
     - Integrate SonarQube with your CI/CD pipeline.
     - Configure SonarQube to analyze code for quality and security issues.
 
 **Phase 3: CI/CD Setup**
 
-1. **Install Jenkins for Automation:**
+**Step 1: Install Jenkins for Automation:**
     - Install Jenkins on the EC2 instance to automate deployment:
     Install Java
     
@@ -172,7 +171,7 @@ docker build --build-arg TMDB_V3_API_KEY=<your-api-key> -t netflix .
         
         publicIp:8080
         
-2. **Install Necessary Plugins in Jenkins:**
+**Step 2: Install Necessary Plugins in Jenkins:**
 
 Goto Manage Jenkins →Plugins → Available Plugins →
 
