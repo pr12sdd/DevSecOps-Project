@@ -107,7 +107,7 @@ Now recreate the Docker image with your api key:
 docker build --build-arg TMDB_V3_API_KEY=<your-api-key> -t netflix .
 ```
 
-**Phase 2: Security**
+### **Phase 2: Security**
 
 **Step 1: Install SonarQube and Trivy:**
     - Install SonarQube and Trivy on the EC2 instance to scan for vulnerabilities.
@@ -141,7 +141,7 @@ docker build --build-arg TMDB_V3_API_KEY=<your-api-key> -t netflix .
     - Integrate SonarQube with your CI/CD pipeline.
     - Configure SonarQube to analyze code for quality and security issues.
 
-**Phase 3: CI/CD Setup**
+### **Phase 3: CI/CD Setup**
 
 **Step 1: Install Jenkins for Automation:**
     - Install Jenkins on the EC2 instance to automate deployment:
@@ -192,13 +192,13 @@ Goto Manage Jenkins → Tools → Install JDK(17) and NodeJs(16)→ Click on App
 
 ### SonarQube
 
-Create the token
+- Create the token
 
-Goto Jenkins Dashboard → Manage Jenkins → Credentials → Add Secret Text. It should look like this
+- Goto Jenkins Dashboard → Manage Jenkins → Credentials → Add Secret Text. It should look like this
 
-After adding sonar token
+- After adding sonar token
 
-Click on Apply and Save
+- Click on Apply and Save
 
 **The Configure System option** is used in Jenkins to configure different server
 
@@ -395,7 +395,7 @@ sudo systemctl restart jenkins
 
 
 ```
-**Phase 4: Deploying Application to kubernetes and integrate with ArgoCD**
+### **Phase 4: Deploying Application to kubernetes and integrate with ArgoCD**
   - This downloads the latest release for your system architecture:
     ```bash
     curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_arm64.tar.gz
@@ -450,73 +450,73 @@ You can then access your application at:
     ```
 ### Deploy Application with ArgoCD
 
-1. **Install ArgoCD:**
+**Step 1: Install ArgoCD:**
 
    You can install ArgoCD on your Kubernetes cluster by following the instructions provided in the [EKS Workshop](https://archive.eksworkshop.com/intermediate/290_argocd/install/) documentation.
 
-2. **Set Your GitHub Repository as a Source:**
+**Step 2: Set Your GitHub Repository as a Source:**
 
    After installing ArgoCD, you need to set up your GitHub repository as a source for your application deployment. This typically involves configuring the connection to your repository and defining the source for your ArgoCD application. The specific steps will depend on your setup and requirements.
 
-3. **Create an ArgoCD Application:**
+**Step 3: Create an ArgoCD Application:**
    - `name`: Set the name for your application.
    - `destination`: Define the destination where your application should be deployed.
    - `project`: Specify the project the application belongs to.
    - `source`: Set the source of your application, including the GitHub repository URL, revision, and the path to the application within the repository.
    - `syncPolicy`: Configure the sync policy, including automatic syncing, pruning, and self-healing.
 
-4. **Access your Application**
+**Step 4: Access your Application**
    - To Access the app make sure port 30007 is open in your security group and then open a new tab paste your NodeIP:30007, your app should be running.
     
     
-**Phase 5: Monitoring**
+### **Phase 5: Monitoring**
 
-1. **Install Prometheus and Grafana:**
+**Step 1: Install Prometheus and Grafana:**
 
    Set up Prometheus and Grafana to monitor your application.
 
    **Installing Prometheus:**
 
-   - ### Add the Prometheus Community Helm repository:
+   - Add the Prometheus Community Helm repository:
      ```bash
      helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
      ```
-   - ### Update your Helm repositories to fetch the latest chart information:
+   - Update your Helm repositories to fetch the latest chart information:
      ```bash
      helm repo update
      ```
-   - ### Install the kube-prometheus-stack chart in a new namespace (e.g., monitoring):
+   - Install the kube-prometheus-stack chart in a new namespace (e.g., monitoring):
      ```bash
      kubectl create namespace monitoring
      helm install prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring
      ```
      This single command installs Prometheus, Grafana, Alertmanager, and necessary exporters (like node-exporter and kube-state-metrics).
-   - ### Verify the installation by checking the status of the pods. It may take a few minutes for all pods to be in the Running state:
+   - Verify the installation by checking the status of the pods. It may take a few minutes for all pods to be in the Running state:
      ```bash
      kubectl get pods --namespace monitoring
      ```
    ### OR
-   - ### We can also install it using kubectl:
+   - We can also install it using kubectl:
      ```bash
      sudo useradd --system --no-create-home --shell /bin/false prometheus
      wget https://github.com/prometheus/prometheus/releases/download/v2.47.1/prometheus-2.47.1.linux-amd64.tar.gz
      ```
    ***Accessing Grafana:***
    Once the pods are running, you can access the Grafana dashboard via port forwarding for temporary access or configure a permanent method like a LoadBalancer or Ingress.
-   - ### Retrieve the default admin password for Grafana:
+   - Retrieve the default admin password for Grafana:
      ```bash
      kubectl get secret --namespace monitoring prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
      ```
-   - ### Use kubectl port-forward to access the Grafana UI from your local machine (opens Grafana on http://localhost:3000):
+   - Use kubectl port-forward to access the Grafana UI from your local machine (opens Grafana on http://localhost:3000):
      ```bash
      kubectl port-forward --namespace monitoring service/prometheus-stack-grafana 3000:80
      ```
      Keep this terminal window open while you use Grafana.
    ***Login to Grafana***
-   - ### Open your web browser and navigate to http://localhost:3000.
-   - ### Log in with the username admin and the password you retrieved with the command above. You may be prompted to change the passwor
+   - Open your web browser and navigate to http://localhost:3000.
+   - Log in with the username admin and the password you retrieved with the command above. You may be prompted to change the passwor
 
-2. **Add Prometheus Data Source:**
+**Step 2: Add Prometheus Data Source:**
 
 To visualize metrics, you need to add a data source. Follow these steps:
 
@@ -532,7 +532,7 @@ To visualize metrics, you need to add a data source. Follow these steps:
   - Set the "URL" to `http://localhost:9090` (assuming Prometheus is running on the same server).
   - Click the "Save & Test" button to ensure the data source is working.
 
- 3. **Import a Dashboard:**
+**Step 3: Import a Dashboard:**
 
 To make it easier to view metrics, you can import a pre-configured dashboard. Follow these steps:
 
@@ -556,12 +556,12 @@ Grafana is a powerful tool for creating visualizations and dashboards, and you c
 
 That's it! You've successfully installed and set up Grafana to work with Prometheus for monitoring and visualization.
 
-**Phase 6: Notification**
+### **Phase 6: Notification**
 
 1. **Implement Notification Services:**
     - Set up email notifications in Jenkins or other notification mechanisms.
 
-**Phase 7: Cleanup**
+### **Phase 7: Cleanup**
 
 1. **Cleanup AWS EC2 Instances:**
     - Terminate AWS EC2 instances that are no longer needed.
