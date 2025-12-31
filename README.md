@@ -396,7 +396,7 @@ sudo systemctl restart jenkins
 
 
 ```
-**Phase 4: Deploying Application to kubernetes**
+**Phase 4: Deploying Application to kubernetes and integrate with ArgoCD**
   - This downloads the latest release for your system architecture:
     ```bash
     curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_Linux_arm64.tar.gz
@@ -425,7 +425,52 @@ sudo systemctl restart jenkins
     ```bash
     aws eks update-kubeconfig --cluster=cluster_name --region=region-name
     ```
-**Phase 4: Monitoring**
+  - Deploying the Application to the Kubernetes Cluster:
+    Now that your Amazon EKS cluster is fully provisioned, the nodegroup is running, and your kubeconfig is updated, you can deploy your pre-written Kubernetes YAML manifest files to the cluster using kubectl.
+    First, confirm that you are connected to the correct cluster:
+    ```bash
+    kubectl get nodes
+    ```
+    This should return a list of nodes from your managed nodegroup.
+  - Organize Your Manifest Files:
+    Ensure all your Kubernetes YAML manifest files (e.g., Deployments, Services, ConfigMaps, Secrets, Ingress, etc.) are saved in a dedicated directory for easy management. For example:
+    ```
+    k8s/
+    ├── deployment.yaml
+    ├── service.yaml
+    ├── configmap.yaml
+    |── ingress.yaml
+  - Apply the Manifests to the Cluster:
+    ```bash
+    kubectl apply -f k8s/
+    ```
+  - If you used a LoadBalancer Service, wait a few minutes for AWS to provision the load balancer. The EXTERNAL-IP field will update with the load balancer DNS name once ready.
+You can then access your application at:
+    ```
+    http://<load-balancer-dns-name>
+    ```
+### Deploy Application with ArgoCD
+
+1. **Install ArgoCD:**
+
+   You can install ArgoCD on your Kubernetes cluster by following the instructions provided in the [EKS Workshop](https://archive.eksworkshop.com/intermediate/290_argocd/install/) documentation.
+
+2. **Set Your GitHub Repository as a Source:**
+
+   After installing ArgoCD, you need to set up your GitHub repository as a source for your application deployment. This typically involves configuring the connection to your repository and defining the source for your ArgoCD application. The specific steps will depend on your setup and requirements.
+
+3. **Create an ArgoCD Application:**
+   - `name`: Set the name for your application.
+   - `destination`: Define the destination where your application should be deployed.
+   - `project`: Specify the project the application belongs to.
+   - `source`: Set the source of your application, including the GitHub repository URL, revision, and the path to the application within the repository.
+   - `syncPolicy`: Configure the sync policy, including automatic syncing, pruning, and self-healing.
+
+4. **Access your Application**
+   - To Access the app make sure port 30007 is open in your security group and then open a new tab paste your NodeIP:30007, your app should be running.
+    
+    
+**Phase 5: Monitoring**
 
 1. **Install Prometheus and Grafana:**
 
@@ -471,9 +516,8 @@ sudo systemctl restart jenkins
    ***Login to Grafana***
    - ### Open your web browser and navigate to http://localhost:3000.
    - ### Log in with the username admin and the password you retrieved with the command above. You may be prompted to change the passwor
-***Step 7: ***
 
-**Step 9: Add Prometheus Data Source:**
+2. **Add Prometheus Data Source:**
 
 To visualize metrics, you need to add a data source. Follow these steps:
 
@@ -489,7 +533,7 @@ To visualize metrics, you need to add a data source. Follow these steps:
   - Set the "URL" to `http://localhost:9090` (assuming Prometheus is running on the same server).
   - Click the "Save & Test" button to ensure the data source is working.
 
-**Step 10: Import a Dashboard:**
+ 3. **Import a Dashboard:**
 
 To make it easier to view metrics, you can import a pre-configured dashboard. Follow these steps:
 
@@ -513,84 +557,10 @@ Grafana is a powerful tool for creating visualizations and dashboards, and you c
 
 That's it! You've successfully installed and set up Grafana to work with Prometheus for monitoring and visualization.
 
-2. **Configure Prometheus Plugin Integration:**
-    - Integrate Jenkins with Prometheus to monitor the CI/CD pipeline.
-
-
-**Phase 5: Notification**
+**Phase 6: Notification**
 
 1. **Implement Notification Services:**
     - Set up email notifications in Jenkins or other notification mechanisms.
-
-# Phase 6: Kubernetes
-
-## Create Kubernetes Cluster with Nodegroups
-
-In this phase, you'll set up a Kubernetes cluster with node groups. This will provide a scalable environment to deploy and manage your applications.
-
-## Monitor Kubernetes with Prometheus
-
-Prometheus is a powerful monitoring and alerting toolkit, and you'll use it to monitor your Kubernetes cluster. Additionally, you'll install the node exporter using Helm to collect metrics from your cluster nodes.
-
-### Install Node Exporter using Helm
-
-To begin monitoring your Kubernetes cluster, you'll install the Prometheus Node Exporter. This component allows you to collect system-level metrics from your cluster nodes. Here are the steps to install the Node Exporter using Helm:
-
-1. Add the Prometheus Community Helm repository:
-
-    ```bash
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-    ```
-
-2. Create a Kubernetes namespace for the Node Exporter:
-
-    ```bash
-    kubectl create namespace prometheus-node-exporter
-    ```
-
-3. Install the Node Exporter using Helm:
-
-    ```bash
-    helm install prometheus-node-exporter prometheus-community/prometheus-node-exporter --namespace prometheus-node-exporter
-    ```
-
-Add a Job to Scrape Metrics on nodeip:9001/metrics in prometheus.yml:
-
-Update your Prometheus configuration (prometheus.yml) to add a new job for scraping metrics from nodeip:9001/metrics. You can do this by adding the following configuration to your prometheus.yml file:
-
-
-```
-  - job_name: 'Netflix'
-    metrics_path: '/metrics'
-    static_configs:
-      - targets: ['node1Ip:9100']
-```
-
-Replace 'your-job-name' with a descriptive name for your job. The static_configs section specifies the targets to scrape metrics from, and in this case, it's set to nodeip:9001.
-
-Don't forget to reload or restart Prometheus to apply these changes to your configuration.
-
-To deploy an application with ArgoCD, you can follow these steps, which I'll outline in Markdown format:
-
-### Deploy Application with ArgoCD
-
-1. **Install ArgoCD:**
-
-   You can install ArgoCD on your Kubernetes cluster by following the instructions provided in the [EKS Workshop](https://archive.eksworkshop.com/intermediate/290_argocd/install/) documentation.
-
-2. **Set Your GitHub Repository as a Source:**
-
-   After installing ArgoCD, you need to set up your GitHub repository as a source for your application deployment. This typically involves configuring the connection to your repository and defining the source for your ArgoCD application. The specific steps will depend on your setup and requirements.
-
-3. **Create an ArgoCD Application:**
-   - `name`: Set the name for your application.
-   - `destination`: Define the destination where your application should be deployed.
-   - `project`: Specify the project the application belongs to.
-   - `source`: Set the source of your application, including the GitHub repository URL, revision, and the path to the application within the repository.
-   - `syncPolicy`: Configure the sync policy, including automatic syncing, pruning, and self-healing.
-
-4. **Access your Application**
-   - To Access the app make sure port 30007 is open in your security group and then open a new tab paste your NodeIP:30007, your app should be running.
 
 **Phase 7: Cleanup**
 
